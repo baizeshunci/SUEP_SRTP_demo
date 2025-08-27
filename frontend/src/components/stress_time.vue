@@ -57,7 +57,16 @@ useBaseChart({
                 ...getTooltipBaseConfig(),
                 textStyle: { color: '#e5e7eb' },
                 formatter: (params) => {
-                    return `${params[0].name}<br/>${params[0].seriesName}: ${params[0].value}°C`;
+                    // 1. 先获取x轴坐标（所有系列共享同一个x值）
+                    let result = `${params[0].name}<br/>`;
+
+                    // 2. 遍历所有系列，拼接每个系列的数据
+                    params.forEach(item => {
+                        result += `${item.seriesName}: ${item.value}<br/>`;
+                    });
+
+                    // 3. 去除最后一个多余的换行符
+                    return result.replace(/<br\/>$/, '');
                 }
             },
             grid,

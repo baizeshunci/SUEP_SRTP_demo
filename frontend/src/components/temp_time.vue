@@ -20,7 +20,7 @@
 import { ref, onMounted, onUnmounted, watch, nextTick } from "vue";
 import * as echarts from "echarts";
 import { useBaseChart } from "./utils_js/base-chart";
-import { getGridConfig, getAxisBaseConfig, getTooltipBaseConfig, getXAxisLabelFormatter ,getYAxisLabelFormatter } from "./utils_js/chart_utils";
+import { getGridConfig, getAxisBaseConfig, getTooltipBaseConfig, getXAxisLabelFormatter, getYAxisLabelFormatter } from "./utils_js/chart_utils";
 
 // 接收父组件传入的数据
 const props = defineProps({
@@ -57,7 +57,16 @@ useBaseChart({
                 trigger: 'axis',
                 ...getTooltipBaseConfig(),
                 formatter: (params) => {
-                    return `${params[0].name}<br/>${params[0].seriesName}: ${params[0].value}°C`;
+                    // 1. 先获取x轴坐标（所有系列共享同一个x值）
+                    let result = `${params[0].name}<br/>`;
+
+                    // 2. 遍历所有系列，拼接每个系列的数据
+                    params.forEach(item => {
+                        result += `${item.seriesName}: ${item.value}°C<br/>`;
+                    });
+
+                    // 3. 去除最后一个多余的换行符
+                    return result.replace(/<br\/>$/, '');
                 }
             },
             grid,
@@ -168,8 +177,7 @@ useBaseChart({
 </script>
 
 <style lang="scss" scoped>
-
-@use "../styles/chart_common" as *; 
+@use "../styles/chart_common" as *;
 
 .temperature-chart-card {
     width: 100%;
@@ -193,5 +201,4 @@ useBaseChart({
         opacity: 1;
     }
 }
-
 </style>

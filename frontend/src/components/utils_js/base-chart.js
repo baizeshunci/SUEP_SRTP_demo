@@ -91,28 +91,32 @@ export function useBaseChart(options) {
     };
 
     // 渲染图表（核心方法）
-    const renderChart = async () => {
-        
-        if (isRendering || !target.value) return;
-        isRendering = true;
+// 渲染图表（核心方法）
+const renderChart = async () => {
+    
+    if (isRendering || !target.value) return;
+    isRendering = true;
 
-        try {
-            await nextTick();
-            // 销毁旧实例（避免DOM复用冲突）
-            if (eChart) eChart.dispose();
-            eChart = echarts.init(target.value);
-            // 生成并应用配置
-            const option = getOption();
-            eChart.setOption(option, true);
-            // 初始化尺寸监听（确保监听生效）
-            initResizeObserver();
-        } catch (error) {
-            console.error("图表渲染失败:", error);
-        } finally {
-            isRendering = false;
+    try {
+        await nextTick();
+        // 👇 新增：通过DOM查询所有残留实例并销毁（原代码无这部分）
+        const existingInstance = echarts.getInstanceByDom(target.value);
+        if (existingInstance) {
+            existingInstance.dispose();
         }
-    };
-
+        // 👇 保留初始化新实例，但无需再判断eChart（已通过DOM清理）
+        eChart = echarts.init(target.value);
+        // 生成并应用配置
+        const option = getOption();
+        eChart.setOption(option, true);
+        // 初始化尺寸监听（确保监听生效）
+        initResizeObserver();
+    } catch (error) {
+        console.error("图表渲染失败:", error);
+    } finally {
+        isRendering = false;
+    }
+};
     // 手动触发重新渲染（暴露给外部调用）
     const rerender = async () => {
         await renderChart();

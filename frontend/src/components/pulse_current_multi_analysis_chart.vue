@@ -60,37 +60,29 @@
 import { ref, onMounted, onUnmounted, watch, nextTick } from "vue";
 import * as echarts from "echarts";
 import { useBaseChart } from "./utils_js/base-chart";
-// 1. 引入复用的工具函数
 import { 
   getGridConfig, 
   getAxisBaseConfig, 
   getTooltipBaseConfig,
   getXAxisLabelFormatter,
   getYAxisLabelFormatter
-} from "./utils_js/chart_utils"; // 假设工具函数放在此路径
+} from "./utils_js/chart_utils";
 
-
-
-// 1. 定义接收的外部数据 props
 const props = defineProps({ 
-  // 脉冲时间-峰值数据：格式为 [[时间1, 峰值1], [时间2, 峰值2], ...]
   pulseTimeData: {
     type: Array,
     required: true,
     validator: (value) => {
-      // 验证数据格式是否正确
       return value.every(item => 
         Array.isArray(item) && item.length === 2 && typeof item[0] === 'number' && typeof item[1] === 'number'
       );
     }
   },
-  // 脉冲频率数据（可选，若不传入则自动根据 pulseTimeData 计算）
   pulseFreqData: {
     type: Array,
     default: null,
     validator: (value) => {
-      if (!value) return true; // 允许为null
-      // 验证格式：[{ name: '低', value: 次数 }, ...]
+      if (!value) return true;
       return value.every(item => 
         typeof item === 'object' && item.name && typeof item.value === 'number'
       );
@@ -100,8 +92,9 @@ const props = defineProps({
 
 // 状态管理
 const isPulseTimeActive = ref(true);
-let pulseTimeChart = null;
-let pulseFreqChart = null;
+// 1. 修复：缓存图表实例
+const pulseTimeChart = ref(null);
+const pulseFreqChart = ref(null);
 
 // 图表容器ref
 const pulseTimeContainer = ref(null);
@@ -119,7 +112,7 @@ const toggleStack = async () => {
   isPulseTimeActive.value = !isPulseTimeActive.value;
 };
 
-// 3. 根据传入的脉冲时间数据计算频率分布（如果未传入 pulseFreqData）
+// 计算频率分布
 const calculateFreqData = () => {
   const timeData = props.pulseTimeData;
   return [
@@ -129,22 +122,21 @@ const calculateFreqData = () => {
   ];
 };
 
-// 根据数值获取颜色（保持不变）
+// 根据数值获取颜色
 const getColorByValue = (value) => {
   if (value < 40) return legendData[0].color;
   if (value < 80) return legendData[1].color;
   return legendData[2].color;
 };
 
-// 初始化脉冲时间-峰值柱状图（使用 props 数据）
+// 初始化脉冲时间-峰值柱状图
 const initPulseTimeChart = () => {
-  
   const container = pulseTimeContainer.value;
+  if (!container) return;
 
   const getPulseTimeOption = () => {
     const grid = getGridConfig(container, { type: 'pulse-time' });
     const fontSize = `clamp(0.55rem, 1.8vw, 0.65rem)`;
-    // 使用外部传入的 pulseTimeData
     const styledData = props.pulseTimeData.map(([time, value]) => ({
       value: [time, value],
       itemStyle: { color: getColorByValue(value) }
@@ -186,24 +178,33 @@ const initPulseTimeChart = () => {
     };
   };
 
-  // 交给 useBaseChart 管理
-  return useBaseChart({
+  // 2. 修复：如果实例已存在，直接更新；否则创建新实例
+  if (pulseTimeChart.value) {
+    const chartInstance = pulseTimeChart.value.getChartInstance();
+    chartInstance?.setOption(getPulseTimeOption(), true);
+    return pulseTimeChart.value;
+  }
+
+  // 3. 修复：watchSource 应为「响应式源数组」（getter函数数组）
+  pulseTimeChart.value = useBaseChart({
     target: pulseTimeContainer,
     getOption: getPulseTimeOption,
-    watchSource: () => [isPulseTimeActive.value, props.pulseTimeData]
+    watchSource: [
+      () => isPulseTimeActive.value,  // 监听切换状态
+      () => props.pulseTimeData       // 监听数据变化
+    ]
   });
-
+  return pulseTimeChart.value;
 };
 
-// 初始化脉冲峰值区间频率图（使用 props 数据或计算数据）
+// 初始化脉冲峰值区间频率图
 const initPulseFreqChart = () => {
-  
   const container = pulseFreqContainer.value;
+  if (!container) return;
 
   const getPulseFreqOption = () => {
-    const grid = getGridConfig(container);
+    const grid = getGridConfig(container,{ type: 'freq-currrntrange' });
     const fontSize = `clamp(0.55rem, 1.8vw, 0.65rem)`;
-    // 使用外部传入的 pulseFreqData，若未传入则自动计算
     const freqData = props.pulseFreqData || calculateFreqData();
 
     return {
@@ -222,7 +223,6 @@ const initPulseFreqChart = () => {
         axisLabel: {
           ...getAxisBaseConfig('category', { fontSize }).axisLabel,
           rotate: container.offsetWidth < 280 ? 30 : 0,
-          // 复用X轴标签格式化工具
           formatter: getXAxisLabelFormatter({
             intervalPixel: 40,
             target: pulseFreqContainer,
@@ -235,7 +235,6 @@ const initPulseFreqChart = () => {
         min: 0,
         axisLabel: {
           ...getAxisBaseConfig('value', { fontSize }).axisLabel,
-          // 复用Y轴标签格式化工具
           formatter: getYAxisLabelFormatter({
             intervalPixel: 25,
             target: pulseFreqContainer,
@@ -256,17 +255,29 @@ const initPulseFreqChart = () => {
     };
   };
 
-  return useBaseChart({
+  // 2. 修复：缓存实例，避免重复创建
+  if (pulseFreqChart.value) {
+    const chartInstance = pulseFreqChart.value.getChartInstance();
+    chartInstance?.setOption(getPulseFreqOption(), true);
+    return pulseFreqChart.value;
+  }
+
+  // 3. 修复：watchSource 格式
+  pulseFreqChart.value = useBaseChart({
     target: pulseFreqContainer,
     getOption: getPulseFreqOption,
-    watchSource: () => [isPulseTimeActive.value, props.pulseFreqData, props.pulseTimeData]
+    watchSource: [
+      () => isPulseTimeActive.value,
+      () => props.pulseFreqData,
+      () => props.pulseTimeData
+    ]
   });
-
+  return pulseFreqChart.value;
 };
 
-// 渲染图表（新增监听 props 变化，数据更新时重新渲染）
+// 渲染图表
 const renderCharts = async () => {
-  await nextTick();
+  await nextTick(); // 确保DOM已更新
   if (isPulseTimeActive.value) {
     initPulseTimeChart();
   } else {
@@ -274,20 +285,31 @@ const renderCharts = async () => {
   }
 };
 
+// 4. 修复：监听逻辑优化，关闭immediate，通过onMounted初始化
 watch([
   () => isPulseTimeActive.value,
   () => props.pulseTimeData,
   () => props.pulseFreqData
-], renderCharts, { immediate: true, deep: true });
+], renderCharts, { deep: true });
 
+// 5. 修复：在onMounted中初始化（确保DOM已挂载，实例活跃）
+onMounted(() => {
+  renderCharts();
+});
+
+// 6. 修复：正确销毁实例
 onUnmounted(() => {
-  if (pulseTimeChart) pulseTimeChart.dispose();
-  if (pulseFreqChart) pulseFreqChart.dispose();
+  if (pulseTimeChart.value) {
+    pulseTimeChart.value.destroyChart();
+    pulseTimeChart.value = null;
+  }
+  if (pulseFreqChart.value) {
+    pulseFreqChart.value.destroyChart();
+    pulseFreqChart.value = null;
+  }
 });
 </script>
 
 <style lang="scss" scoped>
-
 @use "../styles/chart_keynote.scss" as *;
-
 </style>

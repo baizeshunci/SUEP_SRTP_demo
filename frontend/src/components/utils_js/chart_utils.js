@@ -15,7 +15,7 @@ export const getGridConfig = (container, options = {}) => {
       top: (h) => h < 200 ? '8%' : '5%',
       bottom: (h) => h < 250 ? '25%' : h < 350 ? '20%' : '15%'
     },
-    Stress_time:{
+    Stress_time: {
       left: (w) => w < 300 ? '3%' : '2%',
       right: (w) => w < 300 ? '6%' : '5%',
       top: (h) => h < 200 ? '8%' : '5%',
@@ -23,21 +23,33 @@ export const getGridConfig = (container, options = {}) => {
 
     },
     'pulse-time': {
-      left: (w) => w < 300 ? '7%' : '5%',
-      right: (w) => w < 300 ? '7%' : '5%',
-      top: (h) => h < 200 ? '10%' : '7%',
-      bottom: (h) => h < 200 ? '18%' : '15%'
+      left: (w) => w < 300 ? '3%' : '2%',
+      right: (w) => w < 300 ? '6%' : '5%',
+      top: (h) => h < 200 ? '5%' : '3%',
+      bottom: (h) => h < 200 ? '17%' : '12%'
+    },
+    'freq-currrntrange': {
+      left: (w) => w < 300 ? '3%' : '2%',
+      right: (w) => w < 300 ? '6%' : '5%',
+      top: (h) => h < 200 ? '8%' : '5%',
+      bottom: (h) => h < 200 ? '17%' : '15%'
+    },
+    'time-domain': {
+      left: (w) => w < 300 ? '3%' : '2%',
+      right: (w) => w < 300 ? '6%' : '5%',
+      top: (h) => h < 200 ? '5%' : '3%',
+      bottom: (h) => h < 200 ? '17%' : '12%'
     },
     'pulse-freq': {
-      left: (w) => w < 300 ? '7%' : '5%',
-      right: (w) => w < 300 ? '7%' : '5%',
-      top: (h) => h < 200 ? '10%' : '7%',
-      bottom: (h) => h < 200 ? '18%' : '15%'
+      left: (w) => w < 300 ? '3%' : '2%',
+      right: (w) => w < 300 ? '6%' : '5%',
+      top: (h) => h < 200 ? '8%' : '5%',
+      bottom: (h) => h < 200 ? '17%' : '15%'
     }
   };
 
   const config = typeConfig[options.type] || typeConfig.Temperature_time;
-  
+
   // 无容器时返回基础配置（确保不包含数据相关逻辑）
   if (!container) {
     return {
@@ -86,7 +98,7 @@ export const getAxisBaseConfig = (axisType, options = {}) => {
         color: options.splitLineColor || 'rgba(209, 213, 219, 0.1)'
       }
     },
-    
+
   };
 
   // 仅返回样式相关配置，不包含data、min、max等数据属性
@@ -103,12 +115,12 @@ export const getTooltipBaseConfig = (options = {}) => {
     borderWidth: 1,
     textStyle: { color: '#e5e7eb' },
     padding: [8, 12],
-    
+
     // 解除限制，允许浮窗超出图表
     confine: false,
     appendToBody: true,
     zLevel: 9999,
-    
+
     // 移除自定义position逻辑，使用ECharts默认定位
     // （默认会自动跟随鼠标，智能避开边界，与markLine的tooltip行为一致）
   };
@@ -172,4 +184,3 @@ export const getYAxisLabelFormatter = (options) => {
     return '';
   };
 };
-    

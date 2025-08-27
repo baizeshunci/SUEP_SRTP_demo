@@ -1,0 +1,40 @@
+{
+  "name": "vite-plugin-mock-server",
+  "version": "1.3.1",
+  "description": "Vite mock server plugin",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsc -w -p .",
+    "build": "del-cli dist && tsc -p ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enjoycoding/vite-plugin-mock-server.git"
+  },
+  "keywords": [
+    "vite",
+    "mock",
+    "hmr"
+  ],
+  "author": {
+    "name": "Octoape",
+    "email": "octoape@qq.com",
+    "url": "https://github.com/octoape"
+  },
+  "type": "module",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/enjoycoding/vite-plugin-mock-server/issues"
+  },
+  "homepage": "https://github.com/enjoycoding/vite-plugin-mock-server#readme",
+  "devDependencies": {
+    "@types/node": "^15.12.4",
+    "del-cli": "^5.1.0",
+    "typescript": "^4.3.4",
+    "vite": "^2.3.8"
+  },
+  "dependencies": {
+    "@howiefh/ant-path-matcher": "0.0.2",
+    "chokidar": "^3.5.2"
+  }
+}
