@@ -41,7 +41,7 @@ import {
   getXAxisLabelFormatter,
   getYAxisLabelFormatter,
   getTooltipBaseConfig
-} from "./utils_js/chart_utils";
+} from "../utils/chart_utils";
 import { useBaseChart } from "./utils_js/base-chart";
 
 const props = defineProps({

@@ -66,7 +66,7 @@ import {
   getTooltipBaseConfig,
   getXAxisLabelFormatter,
   getYAxisLabelFormatter
-} from "./utils_js/chart_utils";
+} from "../utils/chart_utils";
 
 const props = defineProps({ 
   pulseTimeData: {

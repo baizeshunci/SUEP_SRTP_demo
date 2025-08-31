@@ -72,8 +72,10 @@ import FaultType from "./components/fault_type.vue";
 import UltrasonicChartSwitcher from "./components/ultrasonic_chart_switcher.vue";
 import PulseCurrentMultiAnalysisChart from "./components/pulse_current_multi_analysis_chart.vue";
 import Stress_time from "./components/stress_time.vue";
-import { ref , computed} from 'vue';
+import { ref , computed , onMounted} from 'vue';
 import MockDataSource from './components/utils_js/AI_test_data.js';
+
+import request from './utils/request.js';
 
 // 故障类型列表
 const faultTypes = [
@@ -84,6 +86,21 @@ const faultTypes = [
   '内部故障',
   '未知类型'
 ];
+
+const testRequest = async () => {
+  try {
+    const res = await request.get('/dashboard/test'); // 测试接口
+    console.log('请求成功，返回结果：', res);
+  } catch (err) {
+    console.error('请求测试失败：', err);
+  }
+};
+
+// 页面加载时执行测试
+onMounted(() => {
+  testRequest(); // 新增这一行，其他初始化逻辑保留
+  // ... 原来的 fetchData() 等逻辑
+});
 
 const currentSelected = ref('正常状态');
 // 计算属性自动同步，无需手动更新
@@ -180,7 +197,7 @@ function handleTypeChange(newType) {
 
 <style scoped>
 #building {
-  background: url("@/assets/bg.jpg") center/cover no-repeat fixed;
+  background: url("@/assets/images/bg.jpg") center/cover no-repeat fixed;
   height: 100vh;
   overflow: hidden; /* 保持页面级不滚动 */
 }

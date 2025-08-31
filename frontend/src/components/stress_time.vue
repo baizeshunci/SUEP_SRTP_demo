@@ -19,7 +19,7 @@
 import { ref, onMounted, onUnmounted, watch, nextTick } from "vue";
 import * as echarts from "echarts";
 import { useBaseChart } from "./utils_js/base-chart";
-import { getGridConfig, getAxisBaseConfig, getTooltipBaseConfig, getXAxisLabelFormatter, getYAxisLabelFormatter } from "./utils_js/chart_utils";
+import { getGridConfig, getAxisBaseConfig, getTooltipBaseConfig, getXAxisLabelFormatter, getYAxisLabelFormatter } from "../utils/chart_utils";
 
 // 接收父组件传入的数据
 const props = defineProps({
